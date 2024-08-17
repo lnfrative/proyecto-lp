@@ -7,8 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface; 
+
 #[ORM\Entity(repositoryClass: UsuarioRepository::class)]
-class Usuario
+class Usuario implements PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -105,5 +108,31 @@ class Usuario
         }
 
         return $this;
+    }
+
+    public function getRoles(): array
+    {
+        // Aquí debes retornar los roles del usuario. 
+        // Puedes obtenerlos de la entidad UsuarioRol o de alguna otra lógica que tengas.
+        // Por ejemplo, si UsuarioRol tiene una propiedad 'nombre' que almacena el rol:
+        return [$this->rol->getRol()]; 
+    }
+
+    // Ya tienes el método getPassword(), así que no necesitas cambiarlo.
+
+    public function getSalt(): ?string
+    {
+        return null; // Si usas bcrypt o Argon2i, puedes retornar null aquí
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Si no almacenas credenciales sensibles temporalmente, puedes dejar este método vacío
+    }
+
+    public function getUserIdentifier(): string
+    {
+        // Retorna un identificador único. Puedes usar el email si es único
+        return $this->email; 
     }
 }
