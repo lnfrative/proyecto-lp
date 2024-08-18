@@ -33,22 +33,91 @@ class ReservacionesController extends AbstractController
     #[Route('/reservaciones/aprobadas', name: 'app_reservaciones_aprobadas', methods: ['GET'])]
     public function aprobadas(Request $request, EntityManagerInterface $entityManager): Response
     {
-      
-    }
+      // filtra reservas que tengan estado APROBADO
+      $reservas = $entityManager->getRepository(Reserva::class)
+          ->createQueryBuilder('r') // Alias para Reserva
+          ->join('r.estado', 'e')    // Join con la entidad ReservaEstado
+          ->where('e.estado = :estado') // Filtrar por el estado de ReservaEstado
+          ->setParameter('estado', 'APROBADO')
+          ->getQuery()
+          ->getResult();
+
+      // crea la lista con los datos que devolverá la request
+      $data = array_map(function(Reserva $reserva) {
+          return array(
+              'reserva_id' => $reserva->getId(),
+              'hora' => $reserva->getHorario()->getHora()->format('H:i'),
+              'estado' => $reserva->getEstado()->getEstado(),
+              'cubiculo_id' => $reserva->getCubiculo()->getId(),
+              'usuario_email' => $reserva->getUsuario()->getEmail(),
+              'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
+          );
+      }, $reservas);
+
+      return $this->json($data);
+  }
 
     // Stephany
     #[Route('/reservaciones/aprobar', name: 'app_reservaciones_aprobar', methods: ['POST'])]
     public function aprobar(Request $request, EntityManagerInterface $entityManager): Response
     {
-      
-    }
+      $parameters = json_decode($request->getContent(), TRUE);
+
+      $reservaId = $parameters['reserva_id'];
+
+      // busca la reserva en la db
+      $reserva = $entityManager->getRepository(Reserva::class)->find($reservaId);
+
+      // busca el estado aprobado en la db
+      $reservaEstadoAprobado = $entityManager->getRepository(ReservaEstado::class)->find(1);
+
+      // actualiza el estado de la reservacion
+      $reserva->setEstado($reservaEstadoAprobado);
+
+      // guardar en db
+      $entityManager->persist($reserva);
+      $entityManager->flush();
+
+      return $this->json(array(
+          'reserva_id' => $reserva->getId(),
+          'hora' => $reserva->getHorario()->getHora()->format('H:i'),
+          'estado' => $reserva->getEstado()->getEstado(),
+          'cubiculo_id' => $reserva->getCubiculo()->getId(),
+          'usuario_email' => $reserva->getUsuario()->getEmail(),
+          'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
+      ));
+  }
 
     // Stephany
     #[Route('/reservaciones/cancelar', name: 'app_reservaciones_cancelar', methods: ['POST'])]
     public function cancelar(Request $request, EntityManagerInterface $entityManager): Response
     {
-      
-    }
+      $parameters = json_decode($request->getContent(), TRUE);
+
+      $reservaId = $parameters['reserva_id'];
+
+      // busca la reserva en la db
+      $reserva = $entityManager->getRepository(Reserva::class)->find($reservaId);
+
+      // busca el estado cancelado en la db
+      $reservaEstadoCancelado = $entityManager->getRepository(ReservaEstado::class)->find(4);
+
+      // actualiza el estado de la reservacion
+      $reserva->setEstado($reservaEstadoCancelado);
+
+      // guardar en db
+      $entityManager->persist($reserva);
+      $entityManager->flush();
+
+      return $this->json(array(
+          'reserva_id' => $reserva->getId(),
+          'hora' => $reserva->getHorario()->getHora()->format('H:i'),
+          'estado' => $reserva->getEstado()->getEstado(),
+          'cubiculo_id' => $reserva->getCubiculo()->getId(),
+          'usuario_email' => $reserva->getUsuario()->getEmail(),
+          'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
+      ));
+  }
 
     // Stephany
     #[Route('/reservaciones/rechazar', name: 'app_reservaciones_rechazar', methods: ['POST'])]
