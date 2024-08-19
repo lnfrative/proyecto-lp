@@ -34,8 +34,14 @@ class CubiculosController extends AbstractController
     {
         $cubiculosCreados = $entityManager->getRepository(Cubiculo::class)->findAll();
 
+        $data = array_map(function(Cubiculo $cubiculo) {
+            return array(
+                'id' => $cubiculo->getId(),
+                'capacidad' => $cubiculo->getCapacidad()
+            );
+        }, $cubiculosCreados);
 
-        return $this->json($cubiculosCreados);
+        return $this->json($data);
     }
 
     // José Baidal
