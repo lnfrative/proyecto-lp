@@ -22,11 +22,42 @@ use DateTime;
 
 class ReservacionesController extends AbstractController
 {
-    // Christopher Díaz
+    // Christopher
     #[Route('/reservaciones/crear', name: 'app_reservaciones_crear', methods: ['POST'])]
     public function crear(Request $request, EntityManagerInterface $entityManager): Response
     {
-    
+        $parameters = json_decode($request->getContent(), TRUE);
+
+        $email = $parameters['email'];
+        $hora = DateTime::createFromFormat('H:i', $parameters['hora']);
+        $numeroDeCubiculo = $parameters['numero_cubiculo'];
+
+        $usuariosEncontrados = $entityManager->getRepository(Usuario::class)->findBy(array('email' => $email));
+        $horarioEncontrados = $entityManager->getRepository(Horario::class)->findBy(array('hora' => $hora));
+        $reservaEstadoEncontrados = $entityManager->getRepository(ReservaEstado::class)->findBy(array('estado' => 'PENDIENTE'));
+        $cubiculo = $entityManager->getRepository(Cubiculo::class)->find($numeroDeCubiculo);
+        
+
+        // crear la reserva objeto
+        $reserva = new Reserva();
+        $reserva->setHorario($horarioEncontrados[0]);
+        $reserva->setCubiculo($cubiculo);
+        $reserva->setEstado($reservaEstadoEncontrados[0]);
+        $reserva->setUsuario($usuariosEncontrados[0]);
+        $reserva->setCreatedAt(now());
+
+
+        // guardar en db
+        $entityManager->persist($reserva);
+        $entityManager->flush();
+
+        return $this->json(array(
+            'reserva_id' => $reserva->getId(),
+            'hora' => $horarioEncontrados[0]->getHora()->format('H:i'),
+            'estado' => $reservaEstadoEncontrados[0]->getEstado(),
+            'cubiculo_id' => $cubiculo->getId(),
+            'usuario_email' => $usuariosEncontrados[0]->getEmail(),
+        ));
     }
 
     // Stephany
