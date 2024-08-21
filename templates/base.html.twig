@@ -2,16 +2,116 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+        
         {% block stylesheets %}
+          <style>
+              body {
+                margin: 0;
+                min-height: 100svh;
+                font-family: "Open Sans", sans-serif;
+              }
+
+              header {
+                display: flex; 
+                justify-content: space-between; 
+                min-height: 115px; 
+                align-items: center;
+                box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.1);
+              }
+
+              button:hover {
+                opacity: 0.8;
+              }
+
+              button {
+                background-color: #D9D9D9;
+              }
+
+              button:active {
+                opacity: 0.6;
+              }
+
+              a {
+                text-decoration: none;
+                color: inherit;
+              }
+
+              a:hover {
+                opacity: 0.7;
+              }
+          </style>
         {% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body style="display: flex; background-color: white;">
+
+      <section style="width: 235px; background-color: #F6F6F6; padding-left: 20px;">
+          <div style="min-height: 115px; display: flex; align-items: center; margin-bottom: 20px;">
+              Biblioteca Cubiculos
+          </div>
+
+          {% if app.user.rol.rol == 'Administrador' %}
+            <div style="margin-bottom: 20px;">
+                <a href="/cubiculos/creados">Cubiculos creados</a>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <a href="/reservaciones/aprobadas">Reservaciones aprobadas</a>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <a href="/cubiculos/creados">Reservaciones pendientes</a>
+            </div>
+          {% endif %}
+
+          {% if app.user.rol.rol == 'Estudiante' %}
+            <div style="margin-bottom: 20px;">
+                <a href="/cubiculos/disponibles">Cubiculos disponibles</a>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <a href="/reservaciones/reservar">Reservar</a>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <a href="/reservaciones/consultar">Consultar reservaciones</a>
+            </div>
+          {% endif %}
+      </section>
+
+      <section style="flex-grow: 1;">
+          <header style="display: flex; justify-content: space-between; min-height: 115px; align-items: center; padding-left: 50px; padding-right: 50px;">
+              <h1>{% block headerTitle %}{% endblock %}</h1>
+
+              {% if app.user %}
+                <form action="/logout" method="post">
+                    <button
+                        style="min-height: 50px; border: none; border-radius: 10px; padding-left: 20px; padding-right: 20px; cursor: pointer;"
+                        type="submit"
+                    >
+                        Cerrar sesión
+                    </button>
+                </form>
+              {% endif %}
+
+              {% if not app.user %}
+                <a href="/login">
+                  <button
+                      style="min-height: 50px; border: none; border-radius: 10px; padding-left: 20px; padding-right: 20px; cursor: pointer;"
+                      type="submit"
+                  >
+                      Iniciar sesión
+                  </button>
+                </a>
+              {% endif %}
+
+          </header>
+
+          {% block content %}{% endblock %}
+      </section>
     </body>
 </html>

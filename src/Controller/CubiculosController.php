@@ -25,7 +25,9 @@ class CubiculosController extends AbstractController
         // $horario = $entityManager->getRepository(Horario::class)->findBy(array('hora' => $time));
         // return $this->json($horario);
 
-
+        return $this->render('cubiculos/disponibles.html.twig', [
+            'controller_name' => 'CubiculosController',
+        ]);
     }
     
     // José Baidal

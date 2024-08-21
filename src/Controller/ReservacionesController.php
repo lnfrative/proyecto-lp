@@ -74,7 +74,7 @@ class ReservacionesController extends AbstractController
           ->getResult();
 
       // crea la lista con los datos que devolverá la request
-      $data = array_map(function(Reserva $reserva) {
+      $reservas_data = array_map(function(Reserva $reserva) {
           return array(
               'reserva_id' => $reserva->getId(),
               'hora' => $reserva->getHorario()->getHora()->format('H:i'),
@@ -85,7 +85,13 @@ class ReservacionesController extends AbstractController
           );
       }, $reservas);
 
-      return $this->json($data);
+    //   return $this->json($reservas_data);
+
+      return $this->render('reservaciones/aprobadas.html.twig', [
+        'controller_name' => 'ReservacionesController',
+        'titulo' => 'Reservaciones Aprobadas',
+        'reservas_data' => $reservas_data,
+    ]);
   }
 
     // Stephany
