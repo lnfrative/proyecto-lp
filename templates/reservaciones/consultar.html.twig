@@ -1,1 +1,99 @@
-TODO
+{% extends 'base.html.twig' %}
+
+{% block title %}Consultar reservaciones{% endblock %}
+
+{% block headerTitle %}Consultar reservaciones{% endblock %}
+
+{% block content %}
+    <div style="display: flex; flex-direction: column; align-items: center; padding-top: 20px;">
+        {% for reservacion in reservaciones_data %}
+            <div style="display: flex; margin-bottom: 20px; border-radius: 10px; overflow: hidden">
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    <h3>Cubiculo</h3>
+                    <div>{{ reservacion['cubiculo_id'] }}</div>
+                </div>
+
+                
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #2F3A67; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                    "
+                >
+                    <h3>Horario establecido:</h3>
+                    <div>{{ reservacion['hora'] }}</div>
+                    <div>{{ reservacion['fecha_de_reservacion'] }}</div>
+                    <div style="font-size: 12px;">
+                        <span>ID: {{ reservacion['reserva_id'] }}</span>
+                        {% if app.user.rol.rol == 'Administrador' %}
+                        <span> - {{ reservacion['estado'] }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+
+                {% if app.user.rol.rol == 'Estudiante' %}
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    <h3>Estado:</h3>
+                    <div>{{ reservacion['estado'] }}</div>
+                </div>
+                {% endif %}
+
+                {% if app.user.rol.rol == 'Administrador' %}
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    {% if reservacion['estado'] == 'PENDIENTE' %}
+                        <form action="/reservaciones/aprobar" method="POST">
+                            <input type="hidden" name="reserva_id" value={{ reservacion['reserva_id'] }}>
+                            <button style="margin-right: 10px;" class="btn-aprobar" type="submit">Aprobar</button>
+                        </form> 
+                        <form action="/reservaciones/rechazar" method="POST">
+                            <input type="hidden" name="reserva_id" value={{ reservacion['reserva_id'] }}>
+                            <button class="btn-cancel" type="submit">Rechazar</button>
+                        </form>   
+                    {% endif %}   
+                    
+                    {% if reservacion['estado'] == 'APROBADO' %}
+                        <form action="/reservaciones/cancelar" method="POST">
+                            <input type="hidden" name="reserva_id" value={{ reservacion['reserva_id'] }}>
+                            <button class="btn-cancel" type="submit">Cancelar</button>
+                        </form>   
+                    {% endif %}   
+                </div>
+                {% endif %}
+                
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
