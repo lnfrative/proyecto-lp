@@ -5,5 +5,100 @@
 {% block headerTitle %}Cubículos disponibles{% endblock %}
 
 {% block content %}
-    <div>hola mundo</div>
+    <div style="margin-top: 20px;" class="container">
+        <form action="/cubiculos/disponibles" method="get">
+            <div class="row center-align">
+                <div class="input-field">
+                    <select id="hora" name="hora" required>
+                        <option value="" disabled>Seleccione una hora</option>
+                        <option value="08:00">08:00</option>
+                        <option value="10:00">10:00</option>
+                        <option value="12:00">12:00</option>
+                        <option value="14:00">14:00</option>
+                        <option value="16:00">16:00</option>
+                    </select>
+                    <label for="hora">Horarios disponibles</label>
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn waves-effect waves-light">Ver</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; padding-top: 20px;">
+        {% for cubiculo in cubiculos_data %}
+            <div style="display: flex; margin-bottom: 20px; border-radius: 10px; overflow: hidden">
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    <h3>Cubiculo</h3>
+                    <div>{{ cubiculo['id'] }}</div>
+                </div>
+
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #2F3A67; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                    "
+                >
+                    <h3>Cupos</h3>
+                    <div>{{ cubiculo['capacidad'] - cubiculo['disponibles'] }}/{{ cubiculo['capacidad'] }}</div>
+                </div>
+
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    <form action="/reservaciones/crear" method="POST">
+                        <input type="hidden" name="numero_cubiculo" value={{ cubiculo['id'] }}>
+                        <input type="hidden" name="hora" value="">
+                        <button class="btn-aprobar" type="submit">Reservar</button>
+                    </form>  
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $('select').formSelect();
+
+            function queryParams(name) {
+                let urlParams = new URLSearchParams(window.location.search);
+
+                return urlParams.get(name);
+            }
+
+            let selectedHora = queryParams('hora');
+            
+            if (selectedHora) {
+                $('#hora').val(selectedHora);
+                $('select').formSelect();
+
+                const horaInputs = document.querySelectorAll('input[name="hora"]');
+                horaInputs.forEach(input => {
+                    input.value = selectedHora;
+                });
+            }
+        });
+    </script>
 {% endblock %}

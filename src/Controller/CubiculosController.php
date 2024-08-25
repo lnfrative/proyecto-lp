@@ -29,7 +29,9 @@ class CubiculosController extends AbstractController
         $hora = $request->query->get('hora');
 
         if (is_null($hora)) {
-            return $this->redirectToRoute('app_cubiculos_disponibles', ['hora' => '08:00']); 
+            return $this->render('cubiculos/disponibles.html.twig', [
+                'cubiculos_data' => [],
+            ]);
         }
 
         $date = new DateTime();

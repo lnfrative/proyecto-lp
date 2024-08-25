@@ -28,13 +28,11 @@ class ReservacionesController extends AbstractController
     #[Route('/reservaciones/crear', name: 'app_reservaciones_crear', methods: ['POST'])]
     public function crear(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $parameters = json_decode($request->getContent(), TRUE);
+        $user = $this->getUser();
 
-        $email = $parameters['email'];
-        $hora = DateTime::createFromFormat('H:i', $parameters['hora']);
-        $numeroDeCubiculo = $parameters['numero_cubiculo'];
+        $hora = DateTime::createFromFormat('H:i', $request->request->get('hora'));
+        $numeroDeCubiculo = $request->request->get('numero_cubiculo');
 
-        $usuariosEncontrados = $entityManager->getRepository(Usuario::class)->findBy(array('email' => $email));
         $horarioEncontrados = $entityManager->getRepository(Horario::class)->findBy(array('hora' => $hora));
         $reservaEstadoEncontrados = $entityManager->getRepository(ReservaEstado::class)->findBy(array('estado' => 'PENDIENTE'));
         $cubiculo = $entityManager->getRepository(Cubiculo::class)->find($numeroDeCubiculo);
@@ -45,7 +43,7 @@ class ReservacionesController extends AbstractController
         $reserva->setHorario($horarioEncontrados[0]);
         $reserva->setCubiculo($cubiculo);
         $reserva->setEstado($reservaEstadoEncontrados[0]);
-        $reserva->setUsuario($usuariosEncontrados[0]);
+        $reserva->setUsuario($user);
         $reserva->setCreatedAt(now());
 
 
@@ -53,13 +51,7 @@ class ReservacionesController extends AbstractController
         $entityManager->persist($reserva);
         $entityManager->flush();
 
-        return $this->json(array(
-            'reserva_id' => $reserva->getId(),
-            'hora' => $horarioEncontrados[0]->getHora()->format('H:i'),
-            'estado' => $reservaEstadoEncontrados[0]->getEstado(),
-            'cubiculo_id' => $cubiculo->getId(),
-            'usuario_email' => $usuariosEncontrados[0]->getEmail(),
-        ));
+        return $this->redirectToRoute('app_reservaciones_consultar'); 
     }
 
     // Stephany

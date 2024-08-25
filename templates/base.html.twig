@@ -8,6 +8,12 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
         
+
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
         {% block stylesheets %}
           <style>
               body {
@@ -45,8 +51,49 @@
                 opacity: 0.7;
               }
 
-              h3 {
+              h1, h3, h2 {
                 margin: 0;
+                font-size: 16px;
+                font-weight: 400;
+              }
+
+              .btn {
+                background-color: #636060 !important;
+              }
+
+              /* Cambiar el color del borde de los selects */
+              select {
+                  border-color: #636060 !important;
+              }
+
+              /* Cambiar el color del texto de las opciones del dropdown */
+              .dropdown-content li>a, .dropdown-content li>span {
+                  color: #636060 !important; /* Aplica el color personalizado al texto */
+              }
+
+              /* Cambiar el color de fondo al pasar el mouse sobre una opción */
+              .dropdown-content li:hover {
+                  background-color: #b3b3b3 !important; /* Puedes elegir un tono más claro o oscuro para el hover */
+                  color: #ffffff !important; /* Color del texto al hacer hover */
+              }
+
+              /* Cambiar el color de fondo de la opción seleccionada */
+              .dropdown-content li.active {
+                  background-color: #636060 !important; /* Aplica el color de fondo de la opción seleccionada */
+                  color: #ffffff !important; /* Cambia el color del texto de la opción seleccionada */
+              }
+
+              /* Cambiar el color de fondo y el color del texto de la opción seleccionada al hacer hover */
+              .dropdown-content li.active:hover {
+                  background-color: #4f4e4e !important; /* Un tono más oscuro del color principal */
+                  color: #ffffff !important; /* Color del texto */
+              }
+
+
+              .row.center-align {
+                display: flex;
+                align-items: center;
+                justify-content: center;
               }
 
               .btn-cancel {
