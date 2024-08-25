@@ -18,6 +18,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
 use DateTime;
 
 class ReservacionesController extends AbstractController
@@ -70,6 +72,7 @@ class ReservacionesController extends AbstractController
           ->join('r.estado', 'e')    // Join con la entidad ReservaEstado
           ->where('e.estado = :estado') // Filtrar por el estado de ReservaEstado
           ->setParameter('estado', 'APROBADO')
+          ->orderBy('r.created_at', 'DESC')
           ->getQuery()
           ->getResult();
 
@@ -81,26 +84,22 @@ class ReservacionesController extends AbstractController
               'estado' => $reserva->getEstado()->getEstado(),
               'cubiculo_id' => $reserva->getCubiculo()->getId(),
               'usuario_email' => $reserva->getUsuario()->getEmail(),
-              'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
+              'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d')
           );
       }, $reservas);
-
-    //   return $this->json($reservas_data);
 
       return $this->render('reservaciones/aprobadas.html.twig', [
         'controller_name' => 'ReservacionesController',
         'titulo' => 'Reservaciones Aprobadas',
-        'reservas_data' => $reservas_data,
-    ]);
+        'reservaciones_data' => $reservas_data,
+      ]);
   }
 
     // Stephany
     #[Route('/reservaciones/aprobar', name: 'app_reservaciones_aprobar', methods: ['POST'])]
     public function aprobar(Request $request, EntityManagerInterface $entityManager): Response
     {
-      $parameters = json_decode($request->getContent(), TRUE);
-
-      $reservaId = $parameters['reserva_id'];
+      $reservaId = $request->request->get('reserva_id');
 
       // busca la reserva en la db
       $reserva = $entityManager->getRepository(Reserva::class)->find($reservaId);
@@ -115,23 +114,14 @@ class ReservacionesController extends AbstractController
       $entityManager->persist($reserva);
       $entityManager->flush();
 
-      return $this->json(array(
-          'reserva_id' => $reserva->getId(),
-          'hora' => $reserva->getHorario()->getHora()->format('H:i'),
-          'estado' => $reserva->getEstado()->getEstado(),
-          'cubiculo_id' => $reserva->getCubiculo()->getId(),
-          'usuario_email' => $reserva->getUsuario()->getEmail(),
-          'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
-      ));
+      return $this->redirectToRoute('app_reservaciones_aprobadas'); 
   }
 
     // Stephany
     #[Route('/reservaciones/cancelar', name: 'app_reservaciones_cancelar', methods: ['POST'])]
     public function cancelar(Request $request, EntityManagerInterface $entityManager): Response
     {
-      $parameters = json_decode($request->getContent(), TRUE);
-
-      $reservaId = $parameters['reserva_id'];
+      $reservaId = $request->request->get('reserva_id');
 
       // busca la reserva en la db
       $reserva = $entityManager->getRepository(Reserva::class)->find($reservaId);
@@ -146,23 +136,14 @@ class ReservacionesController extends AbstractController
       $entityManager->persist($reserva);
       $entityManager->flush();
 
-      return $this->json(array(
-          'reserva_id' => $reserva->getId(),
-          'hora' => $reserva->getHorario()->getHora()->format('H:i'),
-          'estado' => $reserva->getEstado()->getEstado(),
-          'cubiculo_id' => $reserva->getCubiculo()->getId(),
-          'usuario_email' => $reserva->getUsuario()->getEmail(),
-          'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
-      ));
-  }
+      return $this->redirectToRoute('app_reservaciones_consultar'); 
+    }
 
     // Stephany
     #[Route('/reservaciones/rechazar', name: 'app_reservaciones_rechazar', methods: ['POST'])]
     public function rechazar(Request $request, EntityManagerInterface $entityManager): Response
     {
-      $parameters = json_decode($request->getContent(), TRUE);
-
-      $reservaId = $parameters['reserva_id'];
+      $reservaId = $request->request->get('reserva_id');
 
       // busca la reserva en la db
       $reserva = $entityManager->getRepository(Reserva::class)->find($reservaId);
@@ -177,46 +158,41 @@ class ReservacionesController extends AbstractController
       $entityManager->persist($reserva);
       $entityManager->flush();
 
-      return $this->json(array(
-          'reserva_id' => $reserva->getId(),
-          'hora' => $reserva->getHorario()->getHora()->format('H:i'),
-          'estado' => $reserva->getEstado()->getEstado(),
-          'cubiculo_id' => $reserva->getCubiculo()->getId(),
-          'usuario_email' => $reserva->getUsuario()->getEmail(),
-          'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
-      ));
-  }
+      return $this->redirectToRoute('app_reservaciones_consultar'); 
+    }
 
     // Stephany
     #[Route('/reservaciones/consultar', name: 'app_reservaciones_consultar', methods: ['GET'])]
     public function consultar(Request $request, EntityManagerInterface $entityManager): Response
     {
-      $email = $request->query->get('email');
+      $user = $this->getUser();
 
-      $usuariosEncontrados = $entityManager->getRepository(Usuario::class)->findBy(array('email' => $email));
-      $usuario = $usuariosEncontrados[0];
+      $db = $entityManager->getRepository(Reserva::class)
+          ->createQueryBuilder('r');
+          
+      if ($user->getRol()->getRol() == 'Estudiante') {
+        $db = $db->join('r.usuario', 'u')
+          ->where('u.id = :usuario_id')
+          ->setParameter('usuario_id', $user->getId());
+      }
 
-      // filtra reservas que tengan el ID del usurio
-      $reservas = $entityManager->getRepository(Reserva::class)
-          ->createQueryBuilder('r') // Alias para Reserva
-          ->join('r.usuario', 'u')    // Join con la entidad Usuario
-          ->where('u.id = :usuario_id') // Filtrar por el id de usuario
-          ->setParameter('usuario_id', $usuario->getId())
-          ->getQuery()
-          ->getResult();
+      $reservas = $db->orderBy('r.created_at', 'DESC')
+        ->getQuery()
+        ->getResult();
 
-
-          $data = array_map(function(Reserva $reserva) {
-              return array(
-                  'reserva_id' => $reserva->getId(),
-                  'hora' => $reserva->getHorario()->getHora()->format('H:i'),
-                  'estado' => $reserva->getEstado()->getEstado(),
-                  'cubiculo_id' => $reserva->getCubiculo()->getId(),
-                  'usuario_email' => $reserva->getUsuario()->getEmail(),
-                  'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d H:i:s')
-              );
-          }, $reservas);
+      $reservas_data = array_map(function(Reserva $reserva) {
+        return array(
+            'reserva_id' => $reserva->getId(),
+            'hora' => $reserva->getHorario()->getHora()->format('H:i'),
+            'estado' => $reserva->getEstado()->getEstado(),
+            'cubiculo_id' => $reserva->getCubiculo()->getId(),
+            'usuario_email' => $reserva->getUsuario()->getEmail(),
+            'fecha_de_reservacion' => $reserva->getCreatedAt()->format('Y-m-d')
+        );
+      }, $reservas);
   
-          return $this->json($data);
-  }
+      return $this->render('reservaciones/consultar.html.twig', [
+        'reservaciones_data' => $reservas_data
+      ]);
+    }
 }

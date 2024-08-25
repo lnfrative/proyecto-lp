@@ -44,6 +44,36 @@
               a:hover {
                 opacity: 0.7;
               }
+
+              h3 {
+                margin: 0;
+              }
+
+              .btn-cancel {
+                background-color: #cc3f3f;
+                color: white;
+                min-height: 40px;
+                padding-left: 10px;
+                padding-right: 10px;
+
+                border: none;
+                border-radius: 10px;
+
+                cursor: pointer;
+              }
+
+              .btn-aprobar {
+                background-color: #636060;
+                color: white;
+                min-height: 40px;
+                padding-left: 10px;
+                padding-right: 10px;
+
+                border: none;
+                border-radius: 10px;
+
+                cursor: pointer;
+              }
           </style>
         {% endblock %}
 
@@ -66,16 +96,13 @@
                 <a href="/reservaciones/aprobadas">Reservaciones aprobadas</a>
             </div>
             <div style="margin-bottom: 20px;">
-                <a href="/cubiculos/creados">Reservaciones pendientes</a>
+                <a href="/reservaciones/consultar">Reservaciones</a>
             </div>
           {% endif %}
 
           {% if app.user.rol.rol == 'Estudiante' %}
             <div style="margin-bottom: 20px;">
                 <a href="/cubiculos/disponibles">Cubiculos disponibles</a>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <a href="/reservaciones/reservar">Reservar</a>
             </div>
             <div style="margin-bottom: 20px;">
                 <a href="/reservaciones/consultar">Consultar reservaciones</a>
