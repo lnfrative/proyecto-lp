@@ -16,6 +16,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Clock\Clock;
 
+use Doctrine\ORM\Query\Expr\Join;
+
 use DateTime;
 
 class CubiculosController extends AbstractController
@@ -30,35 +32,28 @@ class CubiculosController extends AbstractController
             return $this->redirectToRoute('app_cubiculos_disponibles', ['hora' => '08:00']); 
         }
 
-        $dateTime = new DateTime();
-        $inicio = DateTime::createFromFormat('H:i', $hora);
-        
-        $cubiculos = $entityManager->getRepository(Cubiculo::class)
-            ->createQueryBuilder('c')
-            ->select('c, COUNT(r.id) AS reservas_hechas')
-            ->leftJoin('c.reservas', 'r')
-            ->leftJoin('r.horario', 'h')
-            ->where('h.hora = :horaInicio OR h.hora IS NULL')
-            ->andWhere('(r.created_at BETWEEN :dateMin AND :dateMax) OR r.id IS NULL')
-            ->setParameter('horaInicio', $inicio)
-            ->setParameter('dateMin', $dateTime->format('Y-m-d 00:00:00'))
-            ->setParameter('dateMax', $dateTime->format('Y-m-d 23:59:59'))
+        $date = new DateTime();
+
+        $inicioDelDia = clone $date->setTime(0, 0, 0);
+        $finDelDia = clone $date->setTime(23, 59, 59);
+
+        $db = $entityManager->createQueryBuilder()
+            ->select('c.id, c.capacidad')
+            ->addSelect('c.capacidad - COALESCE(SUM(CASE WHEN r.created_at BETWEEN :inicioDelDia AND :finDelDia AND h.hora = :hora THEN 1 ELSE 0 END), 0) AS disponibles')
+            ->from('App\Entity\Cubiculo', 'c')
+            ->leftJoin('App\Entity\Reserva', 'r', Join::WITH, 'c.id = r.cubiculo')
+            ->leftJoin('App\Entity\Horario', 'h', Join::WITH, 'r.horario = h.id')
             ->groupBy('c.id')
-            ->getQuery()
-            ->getResult();
+            ->having('c.capacidad - COALESCE(SUM(CASE WHEN r.created_at BETWEEN :inicioDelDia AND :finDelDia AND h.hora = :hora THEN 1 ELSE 0 END), 0) > 0')
+            ->setParameter('hora', $hora)
+            ->setParameter('inicioDelDia', $inicioDelDia)
+            ->setParameter('finDelDia', $finDelDia);
     
-    
+        $cubiculos = $db->getQuery()->getResult();
 
-        // TODO
-        // $time = DateTime::createFromFormat('H:i', $request->query->get('time'));
-        // $horario = $entityManager->getRepository(Horario::class)->findBy(array('hora' => $time));
-
-
-        return $this->json($cubiculos);
-
-        // return $this->render('cubiculos/disponibles.html.twig', [
-        //     'controller_name' => 'CubiculosController',
-        // ]);
+        return $this->render('cubiculos/disponibles.html.twig', [
+            'cubiculos_data' => $cubiculos,
+        ]);
     }
     
     // José Baidal
