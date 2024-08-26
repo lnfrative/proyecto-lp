@@ -5,5 +5,78 @@
 {% block headerTitle %}Cubículos creados{% endblock %}
 
 {% block content %}
-    <div>hola mundo</div>
+    <div style="display: flex; justify-content: center; margin-top: 20px;" class="container">
+        <button data-target="crearCubiculoModal" class="btn modal-trigger waves-effect waves-light">Crear cubículo</button>
+
+        <!-- Modal Structure -->
+        <div id="crearCubiculoModal" class="modal">
+            <div class="modal-content">
+                <form id="crearCubiculoForm" action="/cubiculos/crear" method="POST">
+                    <div class="input-field">
+                        <input id="capacidad" name="capacidad" type="number" min="1" required>
+                        <label for="capacidad">Capacidad</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-close btn-flat">Cancelar</button>
+                <button type="submit" class="btn waves-effect waves-light" form="crearCubiculoForm">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; padding-top: 20px;">
+        {% for cubiculo in cubiculos_data %}
+            <div style="display: flex; margin-bottom: 20px; border-radius: 10px; overflow: hidden">
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    <h3>Cubiculo</h3>
+                    <div>{{ cubiculo['id'] }}</div>
+                </div>
+
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                    "
+                >
+                    {# Nothing here #}
+                </div>
+
+                <div
+                    style="
+                        min-width: 240px; min-height: 115px; 
+                        background-color: #AAB8C5; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center;
+                        justify-content: center;
+                    "
+                >
+                    <h3>Capacidad</h3>
+                    <div>{{ cubiculo['capacidad'] }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Inicializar el modal
+        $(document).ready(function(){
+            $('.modal').modal();
+        });
+    </script>
 {% endblock %}
