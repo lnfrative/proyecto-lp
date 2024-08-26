@@ -80,15 +80,13 @@ class CubiculosController extends AbstractController
     #[Route('/cubiculos/crear', name: 'app_cubiculos_crear', methods: ['POST'])]
     public function crear(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $parametros = json_decode($request->getContent(), TRUE);
-
         $cubiculo = new Cubiculo();
 
-        $cubiculo->setCapacidad($parametros['capacidad']);
+        $cubiculo->setCapacidad($request->request->get('capacidad'));
 
         $entityManager->persist($cubiculo);
         $entityManager->flush();
 
-        return $this->json($cubiculo);
+        return $this->redirectToRoute('app_cubiculos_creados'); 
     }
 }
