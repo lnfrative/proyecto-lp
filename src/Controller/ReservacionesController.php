@@ -153,7 +153,7 @@ class ReservacionesController extends AbstractController
       return $this->redirectToRoute('app_reservaciones_consultar'); 
     }
 
-    // Stephany
+    // Cristopher
     #[Route('/reservaciones/consultar', name: 'app_reservaciones_consultar', methods: ['GET'])]
     public function consultar(Request $request, EntityManagerInterface $entityManager): Response
     {
